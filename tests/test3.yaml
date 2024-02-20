@@ -743,6 +743,17 @@ sensor:
     temperature:
       name: Kuntze temperature
 
+  - platform: adc
+    pin: A0
+    id: adc_sensor
+    internal: true
+
+  - platform: gp2y1010au0f
+    sensor: adc_sensor
+    adc_voltage_offset: 0.2
+    adc_voltage_multiplier: 3.3
+    output: dust_sensor_led
+
 time:
   - platform: homeassistant
 
@@ -1124,6 +1135,10 @@ output:
     id: my_slow_pwm
     period: 15s
     restart_cycle_on_state_change: false
+  - platform: gpio
+    id: dust_sensor_led
+    pin: GPIO6
+    inverted: true
 
 e131:
 
