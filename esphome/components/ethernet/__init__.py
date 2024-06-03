@@ -59,9 +59,10 @@ ETHERNET_TYPES = {
     "KSZ8081": EthernetType.ETHERNET_TYPE_KSZ8081,
     "KSZ8081RNA": EthernetType.ETHERNET_TYPE_KSZ8081RNA,
     "W5500": EthernetType.ETHERNET_TYPE_W5500,
+    "DM9051": EthernetType.ETHERNET_TYPE_DM9051,
 }
 
-SPI_ETHERNET_TYPES = ["W5500"]
+SPI_ETHERNET_TYPES = ["W5500", "DM9051"]
 
 emac_rmii_clock_mode_t = cg.global_ns.enum("emac_rmii_clock_mode_t")
 emac_rmii_clock_gpio_t = cg.global_ns.enum("emac_rmii_clock_gpio_t")
@@ -171,6 +172,7 @@ CONFIG_SCHEMA = cv.All(
             "KSZ8081": RMII_SCHEMA,
             "KSZ8081RNA": RMII_SCHEMA,
             "W5500": SPI_SCHEMA,
+            "DM9051": SPI_SCHEMA,
         },
         upper=True,
     ),
@@ -182,9 +184,7 @@ def _final_validate(config):
     if config[CONF_TYPE] not in SPI_ETHERNET_TYPES:
         return
     if not CORE.using_esp_idf:
-        raise cv.Invalid(
-            f"SPI ethernet requires ESP-IDF"
-        )
+        raise cv.Invalid("SPI ethernet requires ESP-IDF")
     if spi_configs := fv.full_config.get().get(CONF_SPI):
         variant = get_esp32_variant()
         if variant in (VARIANT_ESP32C3, VARIANT_ESP32S2, VARIANT_ESP32S3):
@@ -229,7 +229,7 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
 
-    if config[CONF_TYPE] == "W5500":
+    if config[CONF_TYPE] in SPI_ETHERNET_TYPES:
         cg.add(var.set_clk_pin(config[CONF_CLK_PIN]))
         cg.add(var.set_miso_pin(config[CONF_MISO_PIN]))
         cg.add(var.set_mosi_pin(config[CONF_MOSI_PIN]))
@@ -242,7 +242,12 @@ async def to_code(config):
 
         cg.add_define("USE_ETHERNET_SPI")
         add_idf_sdkconfig_option("CONFIG_ETH_USE_SPI_ETHERNET", True)
-        add_idf_sdkconfig_option("CONFIG_ETH_SPI_ETHERNET_W5500", True)
+        add_idf_sdkconfig_option(
+            "CONFIG_ETH_SPI_ETHERNET_W5500", config[CONF_TYPE] == "W5500"
+        )
+        add_idf_sdkconfig_option(
+            "CONFIG_ETH_SPI_ETHERNET_DM9051", config[CONF_TYPE] == "DM9051"
+        )
     else:
         cg.add(var.set_phy_addr(config[CONF_PHY_ADDR]))
         cg.add(var.set_mdc_pin(config[CONF_MDC_PIN]))
