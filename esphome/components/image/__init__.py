@@ -1,18 +1,15 @@
 from __future__ import annotations
 
-import logging
-
 import hashlib
 import io
+import logging
 from pathlib import Path
 import re
-from magic import Magic
 
-from esphome import core
-from esphome.components import font
-from esphome import external_files
-import esphome.config_validation as cv
+from esphome import core, external_files
 import esphome.codegen as cg
+from esphome.components import font
+import esphome.config_validation as cv
 from esphome.const import (
     CONF_DITHER,
     CONF_FILE,
@@ -30,9 +27,9 @@ from esphome.core import CORE, HexInt
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "image"
-DEPENDENCIES = ["display"]
 MULTI_CONF = True
 MULTI_CONF_NO_DEFAULT = True
+AUTO_LOAD = ["display"]
 
 image_ns = cg.esphome_ns.namespace("image")
 
@@ -238,13 +235,13 @@ CONFIG_SCHEMA = cv.All(font.validate_pillow_installed, IMAGE_SCHEMA)
 
 
 def load_svg_image(file: bytes, resize: tuple[int, int]):
-    # Local import only to allow "validate_pillow_installed" to run *before* importing it
-    from PIL import Image
-
     # This import is only needed in case of SVG images; adding it
     # to the top would force configurations not using SVG to also have it
     # installed for no reason.
     from cairosvg import svg2png
+
+    # Local import only to allow "validate_pillow_installed" to run *before* importing it
+    from PIL import Image
 
     if resize:
         req_width, req_height = resize
@@ -261,7 +258,7 @@ def load_svg_image(file: bytes, resize: tuple[int, int]):
 
 async def to_code(config):
     # Local import only to allow "validate_pillow_installed" to run *before* importing it
-    from PIL import Image
+    from PIL import Image, UnidentifiedImageError
 
     conf_file = config[CONF_FILE]
 
@@ -274,23 +271,28 @@ async def to_code(config):
     elif conf_file[CONF_SOURCE] == SOURCE_WEB:
         path = compute_local_image_path(conf_file).as_posix()
 
+    else:
+        raise core.EsphomeError("Unknown image source type")
+
     try:
         with open(path, "rb") as f:
             file_contents = f.read()
     except Exception as e:
         raise core.EsphomeError(f"Could not load image file {path}: {e}")
 
-    mime = Magic(mime=True)
-    file_type = mime.from_buffer(file_contents)
-
     resize = config.get(CONF_RESIZE)
-    if "svg" in file_type:
-        image = load_svg_image(file_contents, resize)
-    else:
+    try:
         image = Image.open(io.BytesIO(file_contents))
         if resize:
             image.thumbnail(resize)
-
+    except UnidentifiedImageError as exc:
+        file_str = file_contents[:4096].decode("utf-8")
+        if file_str.startswith("<svg") or (
+            file_str.startswith("<?xml version=") and "<svg" in file_str
+        ):
+            image = load_svg_image(file_contents, resize)
+        else:
+            raise core.EsphomeError(f"Could not load image file {path}") from exc
     width, height = image.size
 
     if CONF_RESIZE not in config and (width > 500 or height > 500):
