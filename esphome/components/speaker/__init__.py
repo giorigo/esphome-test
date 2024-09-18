@@ -81,8 +81,12 @@ automation.register_action("speaker.finish", FinishAction, SPEAKER_AUTOMATION_SC
     speaker_action
 )
 
+
 automation.register_condition(
     "speaker.is_playing", IsPlayingCondition, SPEAKER_AUTOMATION_SCHEMA
+)(speaker_action)
+automation.register_condition(
+    "speaker.is_stopped", IsStoppedCondition, SPEAKER_AUTOMATION_SCHEMA
 )(speaker_action)
 
 automation.register_condition(

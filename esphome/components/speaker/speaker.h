@@ -21,12 +21,16 @@ class Speaker {
 
   virtual void start() = 0;
   virtual void stop() = 0;
+
   // In compare between *STOP()* and *FINISH()*; *FINISH()* will stop after emptying the play buffer,
   // while *STOP()* will break directly.
-  // When finish() is not implemented on the plateform component it should just do a normal stop.
+  // When finish() is not implemented on the plateform component it should just do a normal stop.virtual void finish() { this->stop(); }
   virtual void finish() { this->stop(); }
 
+  virtual void flush() {}
+
   virtual bool has_buffered_data() const = 0;
+  virtual size_t available_space() const { return -1; }
 
   bool is_running() const { return this->state_ == STATE_RUNNING; }
   bool is_stopped() const { return this->state_ == STATE_STOPPED; }
