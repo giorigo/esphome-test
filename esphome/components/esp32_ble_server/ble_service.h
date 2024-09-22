@@ -32,6 +32,7 @@ class BLEService {
   BLECharacteristic *create_characteristic(ESPBTUUID uuid, esp_gatt_char_prop_t properties);
 
   ESPBTUUID get_uuid() { return this->uuid_; }
+  uint8_t get_inst_id() { return this->inst_id_; }
   BLECharacteristic *get_last_created_characteristic() { return this->last_created_characteristic_; }
   uint16_t get_handle() { return this->handle_; }
 
@@ -44,44 +45,45 @@ class BLEService {
   void start();
   void stop();
 
-  bool is_created();
   bool is_failed();
-
-  bool is_running() { return this->running_state_ == RUNNING; }
-  bool is_starting() { return this->running_state_ == STARTING; }
-  bool is_deleted() { return this->init_state_ == DELETED; }
+  bool is_created() { return this->state_ == CREATED; }
+  bool is_running() { return this->state_ == RUNNING; }
+  bool is_starting() { return this->state_ == STARTING; }
+  bool is_deleted() { return this->state_ == DELETED; }
+  void on_client_connect(const std::function<void(const uint16_t)> &&func) { this->on_client_connect_ = func; }
+  void on_client_disconnect(const std::function<void(const uint16_t)> &&func) { this->on_client_disconnect_ = func; }
+  void emit_client_connect(uint16_t conn_id);
+  void emit_client_disconnect(uint16_t conn_id);
 
  protected:
   std::vector<BLECharacteristic *> characteristics_;
   BLECharacteristic *last_created_characteristic_{nullptr};
   uint32_t created_characteristic_count_{0};
-  BLEServer *server_;
+  BLEServer *server_ = nullptr;
   ESPBTUUID uuid_;
   uint16_t num_handles_;
   uint16_t handle_{0xFFFF};
   uint8_t inst_id_;
   bool advertise_{false};
   bool should_start_{false};
+  std::function<void(const uint16_t)> on_client_connect_;
+  std::function<void(const uint16_t)> on_client_disconnect_;
 
   bool do_create_characteristics_();
   void stop_();
 
-  enum InitState : uint8_t {
+  enum State : uint8_t {
     FAILED = 0x00,
     INIT,
     CREATING,
-    CREATING_DEPENDENTS,
     CREATED,
-    DELETING,
-    DELETED,
-  } init_state_{INIT};
-
-  enum RunningState : uint8_t {
     STARTING,
     RUNNING,
     STOPPING,
     STOPPED,
-  } running_state_{STOPPED};
+    DELETING,
+    DELETED,
+  } state_{INIT};
 };
 
 }  // namespace esp32_ble_server

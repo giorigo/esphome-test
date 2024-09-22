@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome/components/esp32_ble/ble_uuid.h"
+#include "esphome/core/bytebuffer.h"
 
 #ifdef USE_ESP32
 
@@ -20,8 +21,7 @@ class BLEDescriptor {
   virtual ~BLEDescriptor();
   void do_create(BLECharacteristic *characteristic);
 
-  void set_value(const std::string &value);
-  void set_value(const uint8_t *data, size_t length);
+  void set_value(ByteBuffer buffer);
 
   void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
