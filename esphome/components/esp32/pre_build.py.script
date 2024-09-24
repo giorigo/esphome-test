@@ -1,0 +1,7 @@
+import subprocess
+import sys
+
+
+subprocess.check_call(
+    [sys.executable, "-m", "pip", "install", "--upgrade", "idf-component-manager"]
+)
