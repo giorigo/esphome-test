@@ -527,7 +527,7 @@ async def to_code(config):
             add_idf_sdkconfig_option(name, RawSdkconfigValue(value))
 
         if conf[CONF_ADVANCED][CONF_IGNORE_EFUSE_MAC_CRC]:
-            cg.add_define("USE_ESP32_IGNORE_EFUSE_MAC_CRC")
+            add_idf_sdkconfig_option("CONFIG_ESP_MAC_IGNORE_MAC_CRC_ERROR", True)
             if (framework_ver.major, framework_ver.minor) >= (4, 4):
                 add_idf_sdkconfig_option(
                     "CONFIG_ESP_PHY_CALIBRATION_AND_DATA_STORAGE", False

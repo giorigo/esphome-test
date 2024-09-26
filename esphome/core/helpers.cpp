@@ -46,7 +46,7 @@
 #include "esp32/rom/crc.h"
 #endif
 
-#if defined(CONFIG_SOC_IEEE802154_SUPPORTED) || defined(USE_ESP32_IGNORE_EFUSE_MAC_CRC)
+#if defined(CONFIG_SOC_IEEE802154_SUPPORTED)
 #include "esp_efuse.h"
 #include "esp_efuse_table.h"
 #endif
@@ -664,7 +664,7 @@ void get_mac_address_raw(uint8_t *mac) {  // NOLINT(readability-non-const-parame
   static const uint8_t esphome_host_mac_address[6] = USE_ESPHOME_HOST_MAC_ADDRESS;
   memcpy(mac, esphome_host_mac_address, sizeof(esphome_host_mac_address));
 #elif defined(USE_ESP32)
-#if defined(CONFIG_SOC_IEEE802154_SUPPORTED) || defined(USE_ESP32_IGNORE_EFUSE_MAC_CRC)
+#if defined(CONFIG_SOC_IEEE802154_SUPPORTED)
   // When CONFIG_SOC_IEEE802154_SUPPORTED is defined, esp_efuse_mac_get_default
   // returns the 802.15.4 EUI-64 address. Read directly from eFuse instead.
   // On some devices, the MAC address that is burnt into EFuse does not
@@ -713,7 +713,7 @@ void set_mac_address(uint8_t *mac) { esp_base_mac_addr_set(mac); }
 bool has_custom_mac_address() {
 #ifdef USE_ESP32
   uint8_t mac[6];
-#if defined(CONFIG_SOC_IEEE802154_SUPPORTED) || defined(USE_ESP32_IGNORE_EFUSE_MAC_CRC)
+#if defined(CONFIG_SOC_IEEE802154_SUPPORTED)
   return (esp_efuse_read_field_blob(ESP_EFUSE_MAC_CUSTOM, mac, 48) == ESP_OK) && mac_address_is_valid(mac);
 #else
   return (esp_efuse_mac_get_custom(mac) == ESP_OK) && mac_address_is_valid(mac);
