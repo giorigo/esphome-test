@@ -18,6 +18,7 @@ from esphome.const import (
     ALLOWED_NAME_CHARS,
     CONF_AVAILABILITY,
     CONF_COMMAND_RETAIN,
+    CONF_DEVICE_ID,
     CONF_COMMAND_TOPIC,
     CONF_DAY,
     CONF_DISABLED_BY_DEFAULT,
@@ -345,6 +346,12 @@ def icon(value):
     raise Invalid(
         'Icons must match the format "[icon pack]:[icon]", e.g. "mdi:home-assistant"'
     )
+
+
+def device_id(value):
+    StringRef = cg.esphome_ns.struct("StringRef")
+    validator = use_id(StringRef)
+    return validator(value)
 
 
 def boolean(value):
@@ -1909,6 +1916,7 @@ MQTT_COMMAND_COMPONENT_SCHEMA = MQTT_COMPONENT_SCHEMA.extend(
     }
 )
 
+# StringRef = cg.esphome_ns.struct("StringRef")
 ENTITY_BASE_SCHEMA = Schema(
     {
         Optional(CONF_NAME): Any(
@@ -1924,6 +1932,8 @@ ENTITY_BASE_SCHEMA = Schema(
         Optional(CONF_DISABLED_BY_DEFAULT, default=False): boolean,
         Optional(CONF_ICON): icon,
         Optional(CONF_ENTITY_CATEGORY): entity_category,
+        # Optional(CONF_DEVICE_ID): use_id(StringRef),
+        Optional(CONF_DEVICE_ID): device_id,
     }
 )
 

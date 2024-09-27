@@ -992,6 +992,10 @@ bool ListEntitiesBinarySensorResponse::decode_length(uint32_t field_id, ProtoLen
       this->icon = value.as_string();
       return true;
     }
+    case 10: {
+      this->device_name = value.as_string();
+      return true;
+    }
     default:
       return false;
   }
@@ -1016,6 +1020,7 @@ void ListEntitiesBinarySensorResponse::encode(ProtoWriteBuffer buffer) const {
   buffer.encode_bool(7, this->disabled_by_default);
   buffer.encode_string(8, this->icon);
   buffer.encode_enum<enums::EntityCategory>(9, this->entity_category);
+  buffer.encode_string(10, this->device_name);
 }
 #ifdef HAS_PROTO_MESSAGE_DUMP
 void ListEntitiesBinarySensorResponse::dump_to(std::string &out) const {
@@ -1056,6 +1061,10 @@ void ListEntitiesBinarySensorResponse::dump_to(std::string &out) const {
 
   out.append("  entity_category: ");
   out.append(proto_enum_to_string<enums::EntityCategory>(this->entity_category));
+  out.append("\n");
+
+  out.append("  device_name: ");
+  out.append("'").append(this->device_name).append("'");
   out.append("\n");
   out.append("}");
 }
@@ -1160,6 +1169,10 @@ bool ListEntitiesCoverResponse::decode_length(uint32_t field_id, ProtoLengthDeli
       this->icon = value.as_string();
       return true;
     }
+    case 13: {
+      this->device_name = value.as_string();
+      return true;
+    }
     default:
       return false;
   }
@@ -1187,6 +1200,7 @@ void ListEntitiesCoverResponse::encode(ProtoWriteBuffer buffer) const {
   buffer.encode_string(10, this->icon);
   buffer.encode_enum<enums::EntityCategory>(11, this->entity_category);
   buffer.encode_bool(12, this->supports_stop);
+  buffer.encode_string(13, this->device_name);
 }
 #ifdef HAS_PROTO_MESSAGE_DUMP
 void ListEntitiesCoverResponse::dump_to(std::string &out) const {
@@ -1239,6 +1253,10 @@ void ListEntitiesCoverResponse::dump_to(std::string &out) const {
 
   out.append("  supports_stop: ");
   out.append(YESNO(this->supports_stop));
+  out.append("\n");
+
+  out.append("  device_name: ");
+  out.append("'").append(this->device_name).append("'");
   out.append("\n");
   out.append("}");
 }
