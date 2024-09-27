@@ -5,9 +5,12 @@ from esphome.const import (
     CONF_DISTANCE,
     CONF_MAC_ADDRESS,
     CONF_ID,
+    ICON_COUNTER,
     ICON_THERMOMETER,
     ICON_RULER,
+    ICON_SIGNAL,
     UNIT_PERCENT,
+    UNIT_EMPTY,
     CONF_LEVEL,
     CONF_TEMPERATURE,
     DEVICE_CLASS_TEMPERATURE,
@@ -16,11 +19,16 @@ from esphome.const import (
     STATE_CLASS_MEASUREMENT,
     CONF_BATTERY_LEVEL,
     DEVICE_CLASS_BATTERY,
+    CONF_SIGNAL_STRENGTH,
+    DEVICE_CLASS_SIGNAL_STRENGTH,
+    ENTITY_CATEGORY_DIAGNOSTIC,
 )
 
 CONF_TANK_TYPE = "tank_type"
 CONF_CUSTOM_DISTANCE_FULL = "custom_distance_full"
 CONF_CUSTOM_DISTANCE_EMPTY = "custom_distance_empty"
+CONF_MINIMUM_SIGNAL_QUALITY_TO_REPORT = "minimum_signal_quality_to_report"
+CONF_IGNORED_READS = "ignored_reads"
 
 ICON_PROPANE_TANK = "mdi:propane-tank"
 
@@ -89,6 +97,26 @@ CONFIG_SCHEMA = (
                 device_class=DEVICE_CLASS_BATTERY,
                 state_class=STATE_CLASS_MEASUREMENT,
             ),
+            cv.Optional(CONF_SIGNAL_STRENGTH): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                icon=ICON_SIGNAL,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_IGNORED_READS): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                icon=ICON_COUNTER,
+                accuracy_decimals=0,
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+            ),
+            # 0 == None
+            # 1 == LOW
+            # 2 == MED
+            # 3 = HIGH
+            cv.Optional(CONF_MINIMUM_SIGNAL_QUALITY_TO_REPORT, default=2): cv.int_range(
+                min=0, max=3
+            ),
         }
     )
     .extend(esp32_ble_tracker.ESP_BLE_DEVICE_SCHEMA)
@@ -119,6 +147,13 @@ async def to_code(config):
         cg.add(var.set_tank_empty(CONF_SUPPORTED_TANKS_MAP[t][0]))
         cg.add(var.set_tank_full(CONF_SUPPORTED_TANKS_MAP[t][1]))
 
+    if CONF_MINIMUM_SIGNAL_QUALITY_TO_REPORT in config:
+        cg.add(
+            var.set_min_signal_quality_to_report(
+                config[CONF_MINIMUM_SIGNAL_QUALITY_TO_REPORT]
+            )
+        )
+
     if CONF_TEMPERATURE in config:
         sens = await sensor.new_sensor(config[CONF_TEMPERATURE])
         cg.add(var.set_temperature(sens))
@@ -131,3 +166,9 @@ async def to_code(config):
     if CONF_BATTERY_LEVEL in config:
         sens = await sensor.new_sensor(config[CONF_BATTERY_LEVEL])
         cg.add(var.set_battery_level(sens))
+    if CONF_SIGNAL_STRENGTH in config:
+        sens = await sensor.new_sensor(config[CONF_SIGNAL_STRENGTH])
+        cg.add(var.set_signal_read_quality(sens))
+    if CONF_IGNORED_READS in config:
+        sens = await sensor.new_sensor(config[CONF_IGNORED_READS])
+        cg.add(var.set_ignored_reads(sens))
