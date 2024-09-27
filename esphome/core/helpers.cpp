@@ -666,11 +666,7 @@ void get_mac_address_raw(uint8_t *mac) {  // NOLINT(readability-non-const-parame
 #elif defined(USE_ESP32)
 #if defined(CONFIG_SOC_IEEE802154_SUPPORTED)
   // When CONFIG_SOC_IEEE802154_SUPPORTED is defined, esp_efuse_mac_get_default
-  // returns the 802.15.4 EUI-64 address. Read directly from eFuse instead.
-  // On some devices, the MAC address that is burnt into EFuse does not
-  // match the CRC that goes along with it. For those devices, this
-  // work-around reads and uses the MAC address as-is from EFuse,
-  // without doing the CRC check.
+  // returns the 802.15.4 EUI-64 address, so we read directly from eFuse instead.
   if (has_custom_mac_address()) {
     esp_efuse_read_field_blob(ESP_EFUSE_MAC_CUSTOM, mac, 48);
   } else {
