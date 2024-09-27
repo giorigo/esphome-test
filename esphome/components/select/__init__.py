@@ -14,6 +14,7 @@ from esphome.const import (
     CONF_OPERATION,
     CONF_OPTION,
     CONF_TRIGGER_ID,
+    CONF_WEB_SERVER,
     CONF_WEB_SERVER_ID,
 )
 from esphome.core import CORE, coroutine_with_priority
@@ -104,9 +105,11 @@ async def setup_select_core_(var, config, *, options: list[str]):
         mqtt_ = cg.new_Pvariable(mqtt_id, var)
         await mqtt.register_mqtt_component(mqtt_, config)
 
-    if (webserver_id := config.get(CONF_WEB_SERVER_ID)) is not None:
+    if (web_server_config := config.get(CONF_WEB_SERVER)) is not None and (
+        webserver_id := web_server_config.get(CONF_WEB_SERVER_ID)
+    ) is not None:
         web_server_ = await cg.get_variable(webserver_id)
-        web_server.add_entity_to_sorting_list(web_server_, var, config)
+        web_server.add_entity_config(web_server_, var, web_server_config)
 
 
 async def register_select(var, config, *, options: list[str]):

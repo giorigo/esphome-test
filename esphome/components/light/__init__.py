@@ -11,6 +11,8 @@ from esphome.const import (
     CONF_GAMMA_CORRECT,
     CONF_ID,
     CONF_MQTT_ID,
+    CONF_WEB_SERVER,
+    CONF_WEB_SERVER_ID,
     CONF_ON_STATE,
     CONF_ON_TURN_OFF,
     CONF_ON_TURN_ON,
@@ -18,7 +20,6 @@ from esphome.const import (
     CONF_RESTORE_MODE,
     CONF_TRIGGER_ID,
     CONF_WARM_WHITE_COLOR_TEMPERATURE,
-    CONF_WEB_SERVER_ID,
 )
 from esphome.core import coroutine_with_priority
 from esphome.cpp_helpers import setup_entity
@@ -181,9 +182,11 @@ async def setup_light_core_(light_var, output_var, config):
         mqtt_ = cg.new_Pvariable(mqtt_id, light_var)
         await mqtt.register_mqtt_component(mqtt_, config)
 
-    if (webserver_id := config.get(CONF_WEB_SERVER_ID)) is not None:
+    if (web_server_config := config.get(CONF_WEB_SERVER)) is not None and (
+        webserver_id := web_server_config.get(CONF_WEB_SERVER_ID)
+    ) is not None:
         web_server_ = await cg.get_variable(webserver_id)
-        web_server.add_entity_to_sorting_list(web_server_, light_var, config)
+        web_server.add_entity_config(web_server_, light_var, web_server_config)
 
 
 async def register_light(output_var, config):

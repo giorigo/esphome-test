@@ -10,12 +10,13 @@ from esphome.const import (
     CONF_ICON,
     CONF_ID,
     CONF_MQTT_ID,
+    CONF_WEB_SERVER,
+    CONF_WEB_SERVER_ID,
     CONF_ON_RAW_VALUE,
     CONF_ON_VALUE,
     CONF_STATE,
     CONF_TO,
     CONF_TRIGGER_ID,
-    CONF_WEB_SERVER_ID,
     DEVICE_CLASS_DATE,
     DEVICE_CLASS_EMPTY,
     DEVICE_CLASS_TIMESTAMP,
@@ -212,9 +213,11 @@ async def setup_text_sensor_core_(var, config):
         mqtt_ = cg.new_Pvariable(mqtt_id, var)
         await mqtt.register_mqtt_component(mqtt_, config)
 
-    if (webserver_id := config.get(CONF_WEB_SERVER_ID)) is not None:
+    if (web_server_config := config.get(CONF_WEB_SERVER)) is not None and (
+        webserver_id := web_server_config.get(CONF_WEB_SERVER_ID)
+    ) is not None:
         web_server_ = await cg.get_variable(webserver_id)
-        web_server.add_entity_to_sorting_list(web_server_, var, config)
+        web_server.add_entity_config(web_server_, var, web_server_config)
 
 
 async def register_text_sensor(var, config):

@@ -17,6 +17,7 @@ from esphome.const import (
     CONF_TILT_COMMAND_TOPIC,
     CONF_TILT_STATE_TOPIC,
     CONF_TRIGGER_ID,
+    CONF_WEB_SERVER,
     CONF_WEB_SERVER_ID,
     DEVICE_CLASS_AWNING,
     DEVICE_CLASS_BLIND,
@@ -137,10 +138,6 @@ async def setup_cover_core_(var, config):
         trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID], var)
         await automation.build_automation(trigger, [], conf)
 
-    if (webserver_id := config.get(CONF_WEB_SERVER_ID)) is not None:
-        web_server_ = await cg.get_variable(webserver_id)
-        web_server.add_entity_to_sorting_list(web_server_, var, config)
-
     if (mqtt_id := config.get(CONF_MQTT_ID)) is not None:
         mqtt_ = cg.new_Pvariable(mqtt_id, var)
         await mqtt.register_mqtt_component(mqtt_, config)
@@ -155,6 +152,12 @@ async def setup_cover_core_(var, config):
             cg.add(mqtt_.set_custom_tilt_state_topic(tilt_state_topic))
         if (tilt_command_topic := config.get(CONF_TILT_COMMAND_TOPIC)) is not None:
             cg.add(mqtt_.set_custom_tilt_command_topic(tilt_command_topic))
+
+    if (web_server_config := config.get(CONF_WEB_SERVER)) is not None and (
+        webserver_id := web_server_config.get(CONF_WEB_SERVER_ID)
+    ) is not None:
+        web_server_ = await cg.get_variable(webserver_id)
+        web_server.add_entity_config(web_server_, var, web_server_config)
 
 
 async def register_cover(var, config):
