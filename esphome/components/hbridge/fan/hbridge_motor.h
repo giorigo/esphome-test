@@ -15,9 +15,9 @@ enum DecayMode {
   DECAY_MODE_FAST = 1,
 };
 
-class HBridgeFan : public Component, public fan::Fan {
+class HBridgeMotor : public Component, public fan::Fan {
  public:
-  HBridgeFan(int speed_count, DecayMode decay_mode) : speed_count_(speed_count), decay_mode_(decay_mode) {}
+  HBridgeMotor(int speed_count, DecayMode decay_mode) : speed_count_(speed_count), decay_mode_(decay_mode) {}
 
   void set_pin_a(output::FloatOutput *pin_a) { pin_a_ = pin_a; }
   void set_pin_b(output::FloatOutput *pin_b) { pin_b_ = pin_b; }
