@@ -158,6 +158,7 @@ esphome/components/gpio/one_wire/* @ssieb
 esphome/components/gps/* @coogle
 esphome/components/graph/* @synco
 esphome/components/graphical_display_menu/* @MrMDavidson
+esphome/components/graphical_layout/* @MrMDavidson
 esphome/components/gree/* @orestismers
 esphome/components/grove_tb6612fng/* @max246
 esphome/components/growatt_solar/* @leeuwte
