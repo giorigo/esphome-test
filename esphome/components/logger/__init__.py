@@ -15,6 +15,11 @@ from esphome.components.esp32.const import (
 )
 from esphome.components.libretiny import get_libretiny_component, get_libretiny_family
 from esphome.components.libretiny.const import COMPONENT_BK72XX, COMPONENT_RTL87XX
+from esphome.components.zephyr import (
+    zephyr_add_cdc_acm,
+    zephyr_add_overlay,
+    zephyr_add_prj_conf,
+)
 import esphome.config_validation as cv
 from esphome.const import (
     CONF_ARGS,
@@ -32,6 +37,7 @@ from esphome.const import (
     PLATFORM_BK72XX,
     PLATFORM_ESP32,
     PLATFORM_ESP8266,
+    PLATFORM_NRF52,
     PLATFORM_RP2040,
     PLATFORM_RTL87XX,
 )
@@ -98,6 +104,8 @@ ESP_ARDUINO_UNSUPPORTED_USB_UARTS = [USB_SERIAL_JTAG]
 
 UART_SELECTION_RP2040 = [USB_CDC, UART0, UART1]
 
+UART_SELECTION_NRF52 = [USB_CDC, UART0]
+
 HARDWARE_UART_TO_UART_SELECTION = {
     UART0: logger_ns.UART_SELECTION_UART0,
     UART0_SWAP: logger_ns.UART_SELECTION_UART0_SWAP,
@@ -150,6 +158,8 @@ def uart_selection(value):
             return cv.one_of(*UART_SELECTION_LIBRETINY[component], upper=True)(value)
     if CORE.is_host:
         raise cv.Invalid("Uart selection not valid for host platform")
+    if CORE.is_nrf52:
+        return cv.one_of(*UART_SELECTION_NRF52, upper=True)(value)
     raise NotImplementedError
 
 
@@ -189,6 +199,7 @@ CONFIG_SCHEMA = cv.All(
                 rp2040=USB_CDC,
                 bk72xx=DEFAULT,
                 rtl87xx=DEFAULT,
+                nrf52=USB_CDC,
             ): cv.All(
                 cv.only_on(
                     [
@@ -197,6 +208,7 @@ CONFIG_SCHEMA = cv.All(
                         PLATFORM_RP2040,
                         PLATFORM_BK72XX,
                         PLATFORM_RTL87XX,
+                        PLATFORM_NRF52,
                     ]
                 ),
                 uart_selection,
@@ -300,6 +312,15 @@ async def to_code(config):
         cg.add_define("USE_LOGGER_USB_CDC")
     except cv.Invalid:
         pass
+
+    if CORE.using_zephyr:
+        if config[CONF_HARDWARE_UART] == UART0:
+            zephyr_add_overlay("""&uart0 { status = "okay";};""")
+        if config[CONF_HARDWARE_UART] == UART1:
+            zephyr_add_overlay("""&uart1 { status = "okay";};""")
+        if config[CONF_HARDWARE_UART] == USB_CDC:
+            zephyr_add_prj_conf("UART_LINE_CTRL", True)
+            zephyr_add_cdc_acm(config, 0)
 
     # Register at end for safe mode
     await cg.register_component(log, config)
