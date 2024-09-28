@@ -235,6 +235,7 @@ esphome/components/m5stack_8angle/* @rnauber
 esphome/components/matrix_keypad/* @ssieb
 esphome/components/max31865/* @DAVe3283
 esphome/components/max44009/* @berfenger
+esphome/components/max6921/* @endym
 esphome/components/max6956/* @looping40
 esphome/components/max7219digit/* @rspaargaren
 esphome/components/max9611/* @mckaymatthew
