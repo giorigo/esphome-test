@@ -38,7 +38,7 @@ class HBridgeFan : public Component, public fan::Fan {
   output::FloatOutput *enable_{nullptr};
   output::BinaryOutput *oscillating_{nullptr};
   output::BinaryOutput *ren;
-  output::BinaryOutput *len
+  output::BinaryOutput *len;
   int speed_count_{};
   DecayMode decay_mode_{DECAY_MODE_SLOW};
   fan::FanTraits traits_;
