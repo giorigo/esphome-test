@@ -19,7 +19,7 @@ from .. import hbridge_ns
 CODEOWNERS = ["@WeekendWarrior"]
 
 
-HBridgeFan = hbridge_ns.class_("HBridgeFan", cg.Component, fan.Fan)
+HBridgeMotor = hbridge_ns.class_("HBridgeMotor", cg.Component, motor.Motor)
 
 DecayMode = hbridge_ns.enum("DecayMode")
 DECAY_MODE_OPTIONS = {
@@ -30,9 +30,9 @@ DECAY_MODE_OPTIONS = {
 # Actions
 BrakeAction = hbridge_ns.class_("BrakeAction", automation.Action)
 
-CONFIG_SCHEMA = fan.FAN_SCHEMA.extend(
+CONFIG_SCHEMA = motor.Motor_SCHEMA.extend(
     {
-        cv.GenerateID(CONF_ID): cv.declare_id(HBridgeFan),
+        cv.GenerateID(CONF_ID): cv.declare_id(HBridgeMotor),
         cv.Required(CONF_PIN_A): cv.use_id(output.FloatOutput),
         cv.Required(CONF_PIN_B): cv.use_id(output.FloatOutput),
         cv.Optional(CONF_DECAY_MODE, default="SLOW"): cv.enum(
@@ -46,11 +46,11 @@ CONFIG_SCHEMA = fan.FAN_SCHEMA.extend(
 
 
 @automation.register_action(
-    "fan.hbridge.brake",
+    "motor.hbridge.brake",
     BrakeAction,
-    maybe_simple_id({cv.Required(CONF_ID): cv.use_id(HBridgeFan)}),
+    maybe_simple_id({cv.Required(CONF_ID): cv.use_id(HBridgeMotor)}),
 )
-async def fan_hbridge_brake_to_code(config, action_id, template_arg, args):
+async def motor_hbridge_brake_to_code(config, action_id, template_arg, args):
     paren = await cg.get_variable(config[CONF_ID])
     return cg.new_Pvariable(action_id, template_arg, paren)
 
@@ -62,7 +62,7 @@ async def to_code(config):
         config[CONF_DECAY_MODE],
     )
     await cg.register_component(var, config)
-    await fan.register_fan(var, config)
+    await motor.register_motor(var, config)
     pin_a_ = await cg.get_variable(config[CONF_PIN_A])
     cg.add(var.set_pin_a(pin_a_))
     pin_b_ = await cg.get_variable(config[CONF_PIN_B])
